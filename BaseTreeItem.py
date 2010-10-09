@@ -1,26 +1,18 @@
 class BaseTreeItem:
-    def __init__(self, data, parent):
-        self.parentItem = parent
-        self.itemData = data
-        self.childItems = []
-
     def child(self, row):
-        return self.childItems[row]
+        return self.children[row]
 
     def data(self, col):
-        return itemData[col]
+        return self.dataItems()[col]
 
     def childCount(self):
-        return len(self.childItems)
+        return len(self.children)
 
     def columnCount(self):
-        return len(self.itemData)
-
-    def parent(self):
-        return self.parentItem
+        return len(self.dataItems())
 
     def ownRowNum(self):
         if self.parentItem:
-            return self.parentItem.childItems.index(self)
+            return self.parentItem.children.index(self)
 
         return 0

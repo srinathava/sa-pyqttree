@@ -1,26 +1,31 @@
-from PyQt4.QtGui import *
-from TreeModel import TreeModel
+#!/usr/bin/env python
+
+from TreeModel import viewTree
 from TimingCell import TimingCell
 import sys
 
 def removeBeginEnd(stageId):
-    (stageName, beginOrEnd) = stageId.rsplit('_', 1)
+    (stageName, beginOrEnd) = stageId.rsplit(':', 1)
+    # stageName = ':'.join(reversed(stageName.split(':')))
+
     return (stageName, beginOrEnd == 'begin')
 
 def parseTimingInfo(fname):
     fp = open(fname)
-    line = fp.readline().strip()
-
-    stageId, timeStr = line.split()
-    topCell = TimingCell(stageId, float(timeStr))
-
+    topCell = TimingCell('INIT', 0);
     stack = [topCell]
 
+    n = 0
     for line in fp:
-        line = line.strip()
-        stageId, timeStr = line.split()
+        n += 1
+        try:
+            line = line.strip()
+            stageId, timeStr = line.rsplit(None, 1)
+            (stageName, isBegin) = removeBeginEnd(stageId)
+        except:
+            print 'Error processign line %d: %s' % (n, line)
+            raise
 
-        (stageName, isBegin) = removeBeginEnd(stageId)
         if isBegin:
             newCell = TimingCell(stageName, float(timeStr), stack[-1])
             stack.append(newCell)
@@ -31,19 +36,12 @@ def parseTimingInfo(fname):
 
             oldCell.finalize(float(timeStr))
 
+    topCell.finalize(topCell.children[-1].endTime)
     return topCell
 
 def main():
-    topCell = parseTimingInfo(sys.argv[1])
-    topCell.dump()
-
-    app = QApplication(sys.argv)
-    view = QTreeView()
-    view.setModel(TreeModel(topCell))
-    view.setWindowTitle('Timing Information')
-    view.show()
-
-    app.exec_()
+    root = parseTimingInfo(sys.argv[1])
+    viewTree(root)
 
 if __name__ == "__main__":
     main()

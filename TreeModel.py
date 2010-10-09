@@ -1,20 +1,21 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+import sys
 
 class TreeModel(QAbstractItemModel):
     '''
     Needs to be instantiated with a class which has the interface defined
     by TreeItem
     '''
-    def __init__(self, rootItem, parent=None):
+    def __init__(self, root, parent=None):
         QAbstractItemModel.__init__(self, parent)
-        self.rootItem = rootItem
+        self.root = root
 
     def columnCount(self, parentIndex):
         if parentIndex.isValid():
-            return parentIndex.internalPointer().columnCount()
+            return len(parentIndex.internalPointer().data)
         else:
-            return self.rootItem.columnCount()
+            return len(self.root.data)
 
     def data(self, index, role):
         if not index.isValid():
@@ -24,7 +25,7 @@ class TreeModel(QAbstractItemModel):
             return QVariant()
 
         treeItem = index.internalPointer()
-        return treeItem.data(index.column())
+        return QVariant(treeItem.data[index.column()])
 
     def flags(self, index):
         if not index.isValid():
@@ -34,7 +35,7 @@ class TreeModel(QAbstractItemModel):
 
     def headerData(self, section, orientation, role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return self.rootItem.data(section)
+            return QVariant(self.root.data[section])
 
         return QVariant()
 
@@ -43,12 +44,12 @@ class TreeModel(QAbstractItemModel):
             return QModelIndex()
 
         if not parentIndex.isValid():
-            parentItem = self.rootItem
+            parentItem = self.root
         else:
             parentItem = parentIndex.internalPointer()
 
-        if row < parentItem.childCount():
-            childItem = parentItem.child(row)
+        if row < len(parentItem.children):
+            childItem = parentItem.children[row]
             return self.createIndex(row, column, childItem)
         else:
             return QModelIndex()
@@ -57,9 +58,9 @@ class TreeModel(QAbstractItemModel):
         if not index.isValid():
             return QModelIndex()
 
-        childItem = index.internalPointer()
-        parentItem = childItem.parent()
-        if parentItem == self.rootItem:
+        treeItem = index.internalPointer()
+        parentItem = treeItem.parent
+        if parentItem == self.root:
             return QModelIndex()
 
         return self.createIndex(parentItem.ownRowNum(), 0, parentItem)
@@ -69,8 +70,22 @@ class TreeModel(QAbstractItemModel):
             return 0
 
         if not parentIndex.isValid():
-            parentItem = self.rootItem
+            parentItem = self.root
         else:
             parentItem = parentIndex.internalPointer()
 
-        return parentItem.childCount()
+        return len(parentItem.children)
+
+def viewTree(root, name):
+    app = QApplication(sys.argv)
+    view = QTreeView()
+    model = TreeModel(root)
+    proxyModel = QSortFilterProxyModel()
+    proxyModel.setSourceModel(model)
+
+    view.setModel(proxyModel)
+    view.setWindowTitle(name)
+    view.show()
+    view.setSortingEnabled(True)
+
+    app.exec_()
