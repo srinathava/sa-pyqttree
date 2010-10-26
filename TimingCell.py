@@ -1,5 +1,3 @@
-from BaseTreeItem import BaseTreeItem
-
 class TimingCell:
     def __init__(self, stageName, startTime, parent=None):
         self.stageName = stageName
@@ -17,12 +15,6 @@ class TimingCell:
     def data(self):
         return (self.stageName, self.rowNum, self.elapsedTime)
 
-    def ownRowNum(self):
-        if self.parent:
-            return self.parent.children.index(self)
-
-        return 0
-
     def finalize(self, endTime):
         self.endTime = endTime
         self.elapsedTime = self.endTime - self.startTime
@@ -36,21 +28,32 @@ class TimingCell:
 
         prevTime = self.startTime
         unaccounted_name = '%s_UNACCOUNTED' % self.stageName
-        nUnaccounted = 0
+        nChildren = 0
         for ch in origChildren:
-            if ch.startTime - prevTime > 1:
-                cellName = '%s_UNACCOUNTED_%d' % (self.stageName, nUnaccounted)
+            if ch.startTime - prevTime > 0.02*self.elapsedTime:
+                nChildren += 1
+                cellName = '%s_UNACCOUNTED_%d' % (self.stageName, nChildren)
                 unaccounted = TimingCell(cellName, prevTime, self)
                 unaccounted.finalize(ch.startTime)
-                nUnaccounted += 1
 
+            nChildren += 1
             self.children.append(ch)
             prevTime = ch.endTime
 
-        if self.endTime - prevTime > 1:
-            cellName = '%s_UNACCOUNTED_%d' % (self.stageName, nUnaccounted)
+        if self.endTime - prevTime > 0.02*self.elapsedTime:
+            nChildren += 1
+            cellName = '%s_UNACCOUNTED_%d' % (self.stageName, nChildren)
             unaccounted = TimingCell(cellName, prevTime, self)
             unaccounted.finalize(self.endTime)
+
+        # totalChildTime = 0
+        # for ch in self.children:
+        #     totalChildTime += ch.elapsedTime
+        # if self.elapsedTime - totalChildTime > 0.05*self.elapsedTime:
+        #     nChildren += 1
+        #     cellName = '%s_SELF_%d' % (self.stageName, nChildren)
+        #     unaccounted = TimingCell(cellName, prevTime, self)
+        #     unaccounted.finalize(self.endTime)
 
         for i in range(len(self.children)):
             self.children[i].rowNum = i

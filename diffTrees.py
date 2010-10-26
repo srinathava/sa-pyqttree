@@ -13,17 +13,10 @@ class DiffCell:
         self._children = None
         self._data = None
         self._parent = parent
-        self._ownRowNum = None
 
     @property
     def parent(self):
         return self._parent
-
-    def ownRowNum(self):
-        if not self._ownRowNum:
-            self._ownRowNum = self.parent.children.index(self)
-
-        return self._ownRowNum
 
     def _initChildren(self):
         self._children = []
@@ -73,14 +66,14 @@ class DiffCell:
                 self._data.append(self.lhs.elapsedTime)
                 lhsTime = self.lhs.elapsedTime
             else:
-                self._data.append(-1)
+                self._data.append('-')
 
             rhsTime = 0
             if self.rhs:
                 self._data.append(self.rhs.elapsedTime)
                 rhsTime = self.rhs.elapsedTime
             else:
-                self._data.append(-1)
+                self._data.append('-')
 
             self._data.append(rhsTime - lhsTime)
 

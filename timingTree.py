@@ -41,7 +41,7 @@ def parseTimingInfo(fname):
 
 def main():
     root = parseTimingInfo(sys.argv[1])
-    viewTree(root)
+    viewTree(root, 'Timing Tree')
 
 if __name__ == "__main__":
     main()

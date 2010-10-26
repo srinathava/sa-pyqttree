@@ -1,1 +1,53 @@
-A very small tutorial style tree widget using PyQt.
+A set of tools to aid in analysing profiling data
+
+These tools basically play the same role as the reports from SLPerfTools.
+The reason for their existence is merely that I felt like making them. In
+addition, they are slightly customized and _much_ faster for very large
+data sets. For example, the stage summary is hierarchical and I can see a
+difference of the summaries.
+
+All the Python scripts operate on .raw files which are created by
+dumpPerf.m. This function converts the raw MAT file created by SLPerfTools
+into a text file. An example of such a text file is
+examples/exp_2010b_01.raw in this directory. Basically each line of the
+text file is of the form:
+
+targetName:mainMachineName:machineName:chartName:stageName:<beginOrEnd> t
+
+<beginOrEnd> is either "begin" or "end" depending on whether the stage has
+started or ended at time t. You'll need to install Python and Qt to use
+these tools. On UNIX, a simple
+
+$ sudo apt-get install python-qt4
+
+does the job. On windows, you'll have to manually download and install both
+Python and PyQt4. savadhan-deb5-64 already has this set up.
+
+Brief Descriptions of the scripts:
+
+1. timingTree.py
+        The basic linear, hierarchical tree view which shows the times
+        taken in various stages
+
+        Synopsis:
+            timingTree.py examples/exp_2010b_01.raw
+
+2. diffTrees.py
+        A difference of the linear times (also hiearchical). Just like the
+        performance tracer difference report
+
+        Synopsis:
+            diffTrees.py examples/exp_2010b_01.raw examples/exp_2011a_01.raw
+
+3. summarizeStages.py
+        A hierarchical summary of the times taken in various stages.
+
+        Synopsis:
+            summarizeStages.py examples/exp_2010b_01.raw
+
+4. diffSum.py
+        The difference of the summary trees. This is probably the most
+        useful in quickly figuring out where regressions have creeped in.
+
+        Synopsis:
+            diffSum.py examples/exp_2010b_01.raw examples/exp_2011a_01.raw

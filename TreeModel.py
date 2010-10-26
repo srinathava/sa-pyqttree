@@ -4,8 +4,17 @@ import sys
 
 class TreeModel(QAbstractItemModel):
     '''
-    Needs to be instantiated with a class which has the interface defined
-    by TreeItem
+    Provides a proxy to the interface required by QAbstractItemModel
+
+    Should be instantiated with a root object which has the following
+    interface:
+
+    class TreeItem:
+        def __init__(self):
+            self.parent = []
+            self.children = []
+            self.data = ()
+
     '''
     def __init__(self, root, parent=None):
         QAbstractItemModel.__init__(self, parent)
@@ -54,6 +63,13 @@ class TreeModel(QAbstractItemModel):
         else:
             return QModelIndex()
 
+    @staticmethod
+    def ownRowNum(item):
+        if item.parent:
+            return item.parent.children.index(item)
+
+        return 0
+
     def parent(self, index):
         if not index.isValid():
             return QModelIndex()
@@ -63,7 +79,7 @@ class TreeModel(QAbstractItemModel):
         if parentItem == self.root:
             return QModelIndex()
 
-        return self.createIndex(parentItem.ownRowNum(), 0, parentItem)
+        return self.createIndex(self.ownRowNum(parentItem), 0, parentItem)
 
     def rowCount(self, parentIndex):
         if parentIndex.column() > 0:
@@ -86,6 +102,12 @@ def viewTree(root, name):
     view.setModel(proxyModel)
     view.setWindowTitle(name)
     view.show()
+    view.setColumnWidth(0, 700)
+    view.expandToDepth(0)
+    view.setWindowState(Qt.WindowMaximized)
+
     view.setSortingEnabled(True)
+    lastCol = len(root.data) - 1
+    view.sortByColumn(lastCol, Qt.DescendingOrder)
 
     app.exec_()

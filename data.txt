@@ -1,4 +1,3 @@
-INIT 0
 stage1:begin 1
 stage11:begin 2
 stage11:end 3

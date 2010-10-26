@@ -16,12 +16,6 @@ class CompNode:
         for n in self.origNodes:
             self.elapsedTime += n.elapsedTime
 
-    def ownRowNum(self):
-        if self.parent:
-            return self.parent.children.index(self)
-
-        return 0
-
     def initChildren(self):
         self._children = []
 
@@ -33,14 +27,16 @@ class CompNode:
         names = [name.rsplit(':',1)[-1] for name in fullNames]
 
         group = {}
+        orderedUniqNames = []
         for ch in allChildren:
             stageName = ch.stageName.rsplit(':',1)[-1]
             if not stageName in group:
                 group[stageName] = []
+                orderedUniqNames.append(stageName)
 
             group[stageName].append(ch)
 
-        for name in group:
+        for name in orderedUniqNames:
             self._children.append(CompNode(group[name], self))
 
     @property
